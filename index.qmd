@@ -1,0 +1,13 @@
+---
+title: "Junzhe Zhao"
+image: "files/profile_pic.jpg"
+about:
+    template: jolla
+    links:
+        - icon: envelope
+          href: juz064@ucsd.edu
+        - icon: linkedin
+          href: https://www.linkedin.com/in/junzhe-zhao-b66a76359
+---
+
+Welcome to my website!
