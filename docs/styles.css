@@ -1,1 +1,21 @@
 /* css styles */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  background-color: #f5f5f5;
+}
+
+h1, h2, h3 {
+  color: #1f4e79;
+}
+
+.about-entity .about-links .about-link {
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+img {
+  border-radius: 50%;
+}

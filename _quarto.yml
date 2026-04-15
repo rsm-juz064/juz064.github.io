@@ -12,6 +12,8 @@ website:
         text: Resume
       - href: projects.qmd  # <-- add this
         text: Projects
+      - href: ab-testing.qmd
+        text: A/B Testing
 
 
 format:
