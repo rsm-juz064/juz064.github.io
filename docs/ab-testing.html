@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Junzhe Zhao">
-<meta name="dcterms.date" content="2026-04-14">
+<meta name="dcterms.date" content="2026-04-21">
 
 <title>A/B Testing a Call to Action – quarto_website</title>
 <style>
@@ -174,6 +174,10 @@ window.Quarto = {
     <a class="nav-link active" href="./ab-testing.html" aria-current="page"> 
 <span class="menu-text">A/B Testing</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./replicate.html"> 
+<span class="menu-text">Replication</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -226,7 +230,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 14, 2026</p>
+      <p class="date">April 21, 2026</p>
     </div>
   </div>
   
@@ -266,7 +270,7 @@ window.Quarto = {
 \theta = 0.22 - 0.18 = 0.04.
 \]</span></p>
 <p>We simulate data by generating 1,000 observations for each group, where each observation is a Bernoulli draw that takes the value 1 if the user signs up and 0 otherwise.</p>
-<div id="bcf00ce4" class="cell" data-execution_count="1">
+<div id="914d15cf" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
@@ -291,7 +295,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="the-law-of-large-numbers">The Law of Large Numbers</h2>
 <p>The Law of Large Numbers states that as the sample size increases, the sample average converges to the true population mean. In the context of this A/B test, this means that our estimator <span class="math inline">\(\hat{\theta} = \bar{X}_A - \bar{X}_B\)</span> should get closer to the true value <span class="math inline">\(\theta = 0.04\)</span> as we collect more data.</p>
 <p>To illustrate this, we compute the difference between the outcomes in groups A and B for each observation and then calculate the cumulative average of these differences as the sample size increases.</p>
-<div id="a1a192e8" class="cell" data-execution_count="2">
+<div id="c57e803e" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>diff <span class="op">=</span> A <span class="op">-</span> B</span>
@@ -318,7 +322,7 @@ window.Quarto = {
 <p>Now that we have an estimate of the difference in sign-up rates, the next question is how precise that estimate is. A point estimate alone does not tell us how much uncertainty there is, so we also want a standard error and a confidence interval.</p>
 <p>One useful way to estimate uncertainty is the bootstrap. The bootstrap is a resampling method: we repeatedly sample with replacement from the observed data, recompute the statistic of interest on each resample, and use the variation across those resampled statistics to estimate the standard error. This is appealing because it does not require us to rely entirely on a closed-form formula.</p>
 <p>Using the simulated data from the previous section, I draw bootstrap samples from each group, compute the difference in sample means for each resample, and then take the standard deviation of those bootstrapped estimates.</p>
-<div id="4ef8b60e" class="cell" data-execution_count="3">
+<div id="9e159170" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>B_boot <span class="op">=</span> <span class="dv">1000</span></span>
@@ -354,7 +358,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="the-central-limit-theorem">The Central Limit Theorem</h2>
 <p>The Central Limit Theorem states that as the sample size grows, the sampling distribution of the sample mean becomes approximately Normal, regardless of the shape of the underlying population distribution. In this setting, that means the sampling distribution of the difference in sample means, <span class="math inline">\(\hat{\theta}\)</span>, should become more bell-shaped as the number of observations increases.</p>
 <p>To illustrate this, I simulate the A/B test repeatedly for several sample sizes and examine the distribution of the resulting estimates.</p>
-<div id="2d65fbf5" class="cell" data-execution_count="4">
+<div id="7b04ebe7" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sample_sizes <span class="op">=</span> [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">500</span>]</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> <span class="dv">1000</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -403,7 +407,7 @@ H_1: \theta \neq 0.
 z = \frac{\hat{\theta} - 0}{SE(\hat{\theta})}.
 \]</span></p>
 <p>Under the null hypothesis, and with a large enough sample, this test statistic is approximately standard Normal. That allows me to compute a p-value and assess whether the observed difference would be unusual if the two CTAs truly performed the same.</p>
-<div id="d23dc744" class="cell" data-execution_count="5">
+<div id="7e3e743a" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> norm</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>z_stat <span class="op">=</span> theta_hat <span class="op">/</span> analytic_se</span>
@@ -426,7 +430,7 @@ z = \frac{\hat{\theta} - 0}{SE(\hat{\theta})}.
 Y_i = \beta_0 + \beta_1 D_i + \varepsilon_i.
 \]</span></p>
 <p>In this regression, <span class="math inline">\(\beta_0\)</span> is the mean outcome in group B, and <span class="math inline">\(\beta_1\)</span> is the difference between the mean outcomes in groups A and B. That means <span class="math inline">\(\beta_1\)</span> is exactly the treatment effect <span class="math inline">\(\theta\)</span> that we have been estimating throughout the assignment.</p>
-<div id="9e645d9a" class="cell" data-execution_count="6">
+<div id="3611e13b" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -444,8 +448,8 @@ Y_i = \beta_0 + \beta_1 D_i + \varepsilon_i.
 Dep. Variable:                      Y   R-squared:                       0.002
 Model:                            OLS   Adj. R-squared:                  0.002
 Method:                 Least Squares   F-statistic:                     4.570
-Date:                Tue, 14 Apr 2026   Prob (F-statistic):             0.0327
-Time:                        21:59:13   Log-Likelihood:                -991.64
+Date:                Tue, 21 Apr 2026   Prob (F-statistic):             0.0327
+Time:                        14:38:26   Log-Likelihood:                -991.64
 No. Observations:                2000   AIC:                             1987.
 Df Residuals:                    1998   BIC:                             1998.
 Df Model:                           1                                         
@@ -475,7 +479,7 @@ Notes:
 <p>A common temptation in A/B testing is to check results repeatedly as data come in and stop the experiment as soon as one version appears to be significantly better. This practice is often called peeking. While it may seem harmless, it creates a serious statistical problem.</p>
 <p>A single hypothesis test at the 5% significance level has a 5% chance of producing a false positive when the null hypothesis is true. But if we repeatedly test the data after 100 observations, then after 200, then after 300, and so on, each new look is another opportunity to make a false rejection. As a result, the overall false positive rate becomes much larger than 5%.</p>
 <p>To demonstrate this, I simulate a world in which the null hypothesis is true by setting <span class="math inline">\(\pi_A = \pi_B = 0.20\)</span>. I then simulate many experiments, test for significance after every 100 observations per group, and record whether at least one of those interim looks produces a p-value below 0.05.</p>
-<div id="eec28644" class="cell" data-execution_count="7">
+<div id="4880bcb9" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pi_null <span class="op">=</span> <span class="fl">0.20</span></span>

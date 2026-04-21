@@ -10,4 +10,6 @@ about:
           href: https://www.linkedin.com/in/junzhe-zhao-b66a76359
 ---
 
-Welcome to my website!
+Hi, I'm Junzhe Zhao. I'm interested in data science, marketing analytics, and statistical modeling.
+
+This site showcases my projects, coursework, and experience.
