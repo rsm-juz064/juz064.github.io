@@ -14,6 +14,7 @@ To test this, I consider two versions of the CTA. Version A might say “Sign up
 
 To determine which version performs better, I run an A/B test. In an A/B test, visitors are randomly assigned to see one of the two versions, and I compare the outcomes between the groups. In this case, the outcome is whether a visitor signs up for the newsletter. By comparing the sign-up rates across the two groups, I can estimate which CTA is more effective and use statistical tools to evaluate whether the observed difference is meaningful.
 
+This example shows how a simple experiment can connect abstract statistical ideas to a realistic decision-making problem.
 
 ## The A/B Test as a Statistical Problem
 
@@ -123,9 +124,9 @@ bootstrap_se, analytic_se, ci_lower, ci_upper
 
 The bootstrapped standard error and the analytical standard error should be quite similar, which is reassuring. In this case, the bootstrap gives an empirical estimate of how much $\hat{\theta}$ would vary across repeated samples, while the analytical formula gives the standard error directly from the Bernoulli model.
 
-Using the bootstrap standard error, I construct a 95\% confidence interval for $\theta$. This interval gives a range of plausible values for the true difference in sign-up rates. If the interval excludes 0, that suggests the data provide evidence of a real difference between the two CTAs.
+The bootstrap standard error and the analytical standard error should be quite similar, which is reassuring. The bootstrap gives an empirical estimate of how much $\hat{\theta}$ would vary across repeated samples, while the analytical formula comes directly from the Bernoulli model.
 
-In this simulation, the bootstrap standard error is very close to the analytical standard error, which confirms that the bootstrap is working as expected. The 95\% confidence interval provides a range of plausible values for $\theta$, and since it does not include 0, it suggests that the difference in sign-up rates is statistically meaningful.
+Using the bootstrap standard error, I construct a 95\% confidence interval for $\theta$. Because this interval does not include 0, it suggests that the difference in sign-up rates is statistically meaningful.
 
 
 ## The Central Limit Theorem
@@ -199,10 +200,10 @@ Although this is often called a t-test in practice, the logic here is closer to 
 
 The p-value tells us how surprising it would be to observe a difference at least this large if the null hypothesis were true. A small p-value provides evidence against the null and suggests that the two CTA versions may truly have different sign-up rates.
 
-In this case, the computed p-value is small, indicating that the observed difference in sign-up rates would be unlikely if the true difference were zero. Therefore, we reject the null hypothesis and conclude that there is evidence of a difference between the two CTAs.
+In this case, the computed p-value is small, indicating that the observed difference in sign-up rates would be unlikely if the true difference were zero. Therefore, we reject the null hypothesis and conclude that there is evidence of a difference between the two CTAs. At the same time, statistical significance does not automatically imply practical importance, so the size of the estimated effect still matters.
 
 
-## The T-Test as a Regression
+## A/B Testing as a Regression
 
 The two-sample test above can also be written as a simple linear regression. This is useful because it shows that hypothesis testing for experiments fits naturally into the regression framework, which can later be extended to more complicated settings.
 
@@ -285,6 +286,9 @@ In this simulation, the false positive rate is substantially higher than the nom
 
 
 
+
 ## Conclusion
 
 This exercise demonstrates how simulation can help us understand key ideas in frequentist statistics. From the Law of Large Numbers to hypothesis testing and the dangers of peeking, each concept plays an important role in making reliable decisions based on A/B tests.
+
+More broadly, this example shows that even a simple experiment can illustrate the connection between estimation, uncertainty, and decision-making. Careful interpretation matters just as much as computation, especially when statistical significance can be overstated or misused.
