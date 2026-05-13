@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Junzhe Zhao">
-<meta name="dcterms.date" content="2026-04-21">
+<meta name="dcterms.date" content="2026-05-13">
 
 <title>A/B Testing a Call to Action – quarto_website</title>
 <style>
@@ -178,6 +178,10 @@ window.Quarto = {
     <a class="nav-link" href="./replicate.html"> 
 <span class="menu-text">Replication</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./MLE.html"> 
+<span class="menu-text">MLE</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -201,7 +205,7 @@ window.Quarto = {
   <li><a href="#bootstrap-standard-errors" id="toc-bootstrap-standard-errors" class="nav-link" data-scroll-target="#bootstrap-standard-errors">Bootstrap Standard Errors</a></li>
   <li><a href="#the-central-limit-theorem" id="toc-the-central-limit-theorem" class="nav-link" data-scroll-target="#the-central-limit-theorem">The Central Limit Theorem</a></li>
   <li><a href="#hypothesis-testing" id="toc-hypothesis-testing" class="nav-link" data-scroll-target="#hypothesis-testing">Hypothesis Testing</a></li>
-  <li><a href="#the-t-test-as-a-regression" id="toc-the-t-test-as-a-regression" class="nav-link" data-scroll-target="#the-t-test-as-a-regression">The T-Test as a Regression</a></li>
+  <li><a href="#ab-testing-as-a-regression" id="toc-ab-testing-as-a-regression" class="nav-link" data-scroll-target="#ab-testing-as-a-regression">A/B Testing as a Regression</a></li>
   <li><a href="#the-problem-with-peeking" id="toc-the-problem-with-peeking" class="nav-link" data-scroll-target="#the-problem-with-peeking">The Problem with Peeking</a></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
@@ -230,7 +234,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 21, 2026</p>
+      <p class="date">May 13, 2026</p>
     </div>
   </div>
   
@@ -247,6 +251,7 @@ window.Quarto = {
 <p>Suppose I run a personal website with a landing page that invites visitors to sign up for my newsletter. I want to understand which wording of my call to action (CTA) is more effective at encouraging users to subscribe.</p>
 <p>To test this, I consider two versions of the CTA. Version A might say “Sign up for our newsletter here!” while Version B says “Stay up to date by signing up!” While both aim to achieve the same goal, small differences in wording can influence user behavior.</p>
 <p>To determine which version performs better, I run an A/B test. In an A/B test, visitors are randomly assigned to see one of the two versions, and I compare the outcomes between the groups. In this case, the outcome is whether a visitor signs up for the newsletter. By comparing the sign-up rates across the two groups, I can estimate which CTA is more effective and use statistical tools to evaluate whether the observed difference is meaningful.</p>
+<p>This example shows how a simple experiment can connect abstract statistical ideas to a realistic decision-making problem.</p>
 </section>
 <section id="the-ab-test-as-a-statistical-problem" class="level2">
 <h2 class="anchored" data-anchor-id="the-ab-test-as-a-statistical-problem">The A/B Test as a Statistical Problem</h2>
@@ -270,7 +275,7 @@ window.Quarto = {
 \theta = 0.22 - 0.18 = 0.04.
 \]</span></p>
 <p>We simulate data by generating 1,000 observations for each group, where each observation is a Bernoulli draw that takes the value 1 if the user signs up and 0 otherwise.</p>
-<div id="914d15cf" class="cell" data-execution_count="1">
+<div id="cc1c240d" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
@@ -295,7 +300,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="the-law-of-large-numbers">The Law of Large Numbers</h2>
 <p>The Law of Large Numbers states that as the sample size increases, the sample average converges to the true population mean. In the context of this A/B test, this means that our estimator <span class="math inline">\(\hat{\theta} = \bar{X}_A - \bar{X}_B\)</span> should get closer to the true value <span class="math inline">\(\theta = 0.04\)</span> as we collect more data.</p>
 <p>To illustrate this, we compute the difference between the outcomes in groups A and B for each observation and then calculate the cumulative average of these differences as the sample size increases.</p>
-<div id="c57e803e" class="cell" data-execution_count="2">
+<div id="e1dac979" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>diff <span class="op">=</span> A <span class="op">-</span> B</span>
@@ -322,7 +327,7 @@ window.Quarto = {
 <p>Now that we have an estimate of the difference in sign-up rates, the next question is how precise that estimate is. A point estimate alone does not tell us how much uncertainty there is, so we also want a standard error and a confidence interval.</p>
 <p>One useful way to estimate uncertainty is the bootstrap. The bootstrap is a resampling method: we repeatedly sample with replacement from the observed data, recompute the statistic of interest on each resample, and use the variation across those resampled statistics to estimate the standard error. This is appealing because it does not require us to rely entirely on a closed-form formula.</p>
 <p>Using the simulated data from the previous section, I draw bootstrap samples from each group, compute the difference in sample means for each resample, and then take the standard deviation of those bootstrapped estimates.</p>
-<div id="9e159170" class="cell" data-execution_count="3">
+<div id="f071d65d" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>B_boot <span class="op">=</span> <span class="dv">1000</span></span>
@@ -351,14 +356,14 @@ window.Quarto = {
 </div>
 </div>
 <p>The bootstrapped standard error and the analytical standard error should be quite similar, which is reassuring. In this case, the bootstrap gives an empirical estimate of how much <span class="math inline">\(\hat{\theta}\)</span> would vary across repeated samples, while the analytical formula gives the standard error directly from the Bernoulli model.</p>
-<p>Using the bootstrap standard error, I construct a 95% confidence interval for <span class="math inline">\(\theta\)</span>. This interval gives a range of plausible values for the true difference in sign-up rates. If the interval excludes 0, that suggests the data provide evidence of a real difference between the two CTAs.</p>
-<p>In this simulation, the bootstrap standard error is very close to the analytical standard error, which confirms that the bootstrap is working as expected. The 95% confidence interval provides a range of plausible values for <span class="math inline">\(\theta\)</span>, and since it does not include 0, it suggests that the difference in sign-up rates is statistically meaningful.</p>
+<p>The bootstrap standard error and the analytical standard error should be quite similar, which is reassuring. The bootstrap gives an empirical estimate of how much <span class="math inline">\(\hat{\theta}\)</span> would vary across repeated samples, while the analytical formula comes directly from the Bernoulli model.</p>
+<p>Using the bootstrap standard error, I construct a 95% confidence interval for <span class="math inline">\(\theta\)</span>. Because this interval does not include 0, it suggests that the difference in sign-up rates is statistically meaningful.</p>
 </section>
 <section id="the-central-limit-theorem" class="level2">
 <h2 class="anchored" data-anchor-id="the-central-limit-theorem">The Central Limit Theorem</h2>
 <p>The Central Limit Theorem states that as the sample size grows, the sampling distribution of the sample mean becomes approximately Normal, regardless of the shape of the underlying population distribution. In this setting, that means the sampling distribution of the difference in sample means, <span class="math inline">\(\hat{\theta}\)</span>, should become more bell-shaped as the number of observations increases.</p>
 <p>To illustrate this, I simulate the A/B test repeatedly for several sample sizes and examine the distribution of the resulting estimates.</p>
-<div id="7b04ebe7" class="cell" data-execution_count="4">
+<div id="a0410ca5" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sample_sizes <span class="op">=</span> [<span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">500</span>]</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> <span class="dv">1000</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -407,7 +412,7 @@ H_1: \theta \neq 0.
 z = \frac{\hat{\theta} - 0}{SE(\hat{\theta})}.
 \]</span></p>
 <p>Under the null hypothesis, and with a large enough sample, this test statistic is approximately standard Normal. That allows me to compute a p-value and assess whether the observed difference would be unusual if the two CTAs truly performed the same.</p>
-<div id="7e3e743a" class="cell" data-execution_count="5">
+<div id="e4d6fcfe" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> norm</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>z_stat <span class="op">=</span> theta_hat <span class="op">/</span> analytic_se</span>
@@ -420,17 +425,17 @@ z = \frac{\hat{\theta} - 0}{SE(\hat{\theta})}.
 </div>
 <p>Although this is often called a t-test in practice, the logic here is closer to a z-test. Our data are Bernoulli rather than Normally distributed, so there is no exact finite-sample t-distribution result. Instead, the justification comes from the Central Limit Theorem: for large samples, <span class="math inline">\(\hat{\theta}\)</span> is approximately Normal, and once we divide by its standard error, the resulting test statistic is approximately standard Normal.</p>
 <p>The p-value tells us how surprising it would be to observe a difference at least this large if the null hypothesis were true. A small p-value provides evidence against the null and suggests that the two CTA versions may truly have different sign-up rates.</p>
-<p>In this case, the computed p-value is small, indicating that the observed difference in sign-up rates would be unlikely if the true difference were zero. Therefore, we reject the null hypothesis and conclude that there is evidence of a difference between the two CTAs.</p>
+<p>In this case, the computed p-value is small, indicating that the observed difference in sign-up rates would be unlikely if the true difference were zero. Therefore, we reject the null hypothesis and conclude that there is evidence of a difference between the two CTAs. At the same time, statistical significance does not automatically imply practical importance, so the size of the estimated effect still matters.</p>
 </section>
-<section id="the-t-test-as-a-regression" class="level2">
-<h2 class="anchored" data-anchor-id="the-t-test-as-a-regression">The T-Test as a Regression</h2>
+<section id="ab-testing-as-a-regression" class="level2">
+<h2 class="anchored" data-anchor-id="ab-testing-as-a-regression">A/B Testing as a Regression</h2>
 <p>The two-sample test above can also be written as a simple linear regression. This is useful because it shows that hypothesis testing for experiments fits naturally into the regression framework, which can later be extended to more complicated settings.</p>
 <p>To do this, I stack the observations from the two groups into one dataset. Let <span class="math inline">\(Y_i\)</span> be the outcome for visitor <span class="math inline">\(i\)</span>, where <span class="math inline">\(Y_i = 1\)</span> if the visitor signs up and 0 otherwise. Let <span class="math inline">\(D_i\)</span> be a treatment indicator equal to 1 if the visitor saw CTA A and 0 if the visitor saw CTA B. Then I estimate the regression</p>
 <p><span class="math display">\[
 Y_i = \beta_0 + \beta_1 D_i + \varepsilon_i.
 \]</span></p>
 <p>In this regression, <span class="math inline">\(\beta_0\)</span> is the mean outcome in group B, and <span class="math inline">\(\beta_1\)</span> is the difference between the mean outcomes in groups A and B. That means <span class="math inline">\(\beta_1\)</span> is exactly the treatment effect <span class="math inline">\(\theta\)</span> that we have been estimating throughout the assignment.</p>
-<div id="3611e13b" class="cell" data-execution_count="6">
+<div id="daf3d1f1" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -448,8 +453,8 @@ Y_i = \beta_0 + \beta_1 D_i + \varepsilon_i.
 Dep. Variable:                      Y   R-squared:                       0.002
 Model:                            OLS   Adj. R-squared:                  0.002
 Method:                 Least Squares   F-statistic:                     4.570
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):             0.0327
-Time:                        14:38:26   Log-Likelihood:                -991.64
+Date:                Wed, 13 May 2026   Prob (F-statistic):             0.0327
+Time:                        11:55:24   Log-Likelihood:                -991.64
 No. Observations:                2000   AIC:                             1987.
 Df Residuals:                    1998   BIC:                             1998.
 Df Model:                           1                                         
@@ -479,7 +484,7 @@ Notes:
 <p>A common temptation in A/B testing is to check results repeatedly as data come in and stop the experiment as soon as one version appears to be significantly better. This practice is often called peeking. While it may seem harmless, it creates a serious statistical problem.</p>
 <p>A single hypothesis test at the 5% significance level has a 5% chance of producing a false positive when the null hypothesis is true. But if we repeatedly test the data after 100 observations, then after 200, then after 300, and so on, each new look is another opportunity to make a false rejection. As a result, the overall false positive rate becomes much larger than 5%.</p>
 <p>To demonstrate this, I simulate a world in which the null hypothesis is true by setting <span class="math inline">\(\pi_A = \pi_B = 0.20\)</span>. I then simulate many experiments, test for significance after every 100 observations per group, and record whether at least one of those interim looks produces a p-value below 0.05.</p>
-<div id="4880bcb9" class="cell" data-execution_count="7">
+<div id="0f6c0147" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pi_null <span class="op">=</span> <span class="fl">0.20</span></span>
@@ -521,6 +526,7 @@ Notes:
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
 <p>This exercise demonstrates how simulation can help us understand key ideas in frequentist statistics. From the Law of Large Numbers to hypothesis testing and the dangers of peeking, each concept plays an important role in making reliable decisions based on A/B tests.</p>
+<p>More broadly, this example shows that even a simple experiment can illustrate the connection between estimation, uncertainty, and decision-making. Careful interpretation matters just as much as computation, especially when statistical significance can be overstated or misused.</p>
 
 
 </section>
