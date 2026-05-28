@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Junzhe Zhao">
-<meta name="dcterms.date" content="2026-04-21">
+<meta name="dcterms.date" content="2026-05-13">
 
 <title>Replication of Angrist and Lavy (1999) – quarto_website</title>
 <style>
@@ -149,6 +149,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./replicate.html" aria-current="page"> 
 <span class="menu-text">Replication</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./MLE.html"> 
+<span class="menu-text">MLE</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -194,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 21, 2026</p>
+      <p class="date">May 13, 2026</p>
     </div>
   </div>
   
@@ -213,7 +217,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="main-analysis" class="level2">
 <h2 class="anchored" data-anchor-id="main-analysis">Main Analysis</h2>
 <p>In this section, I load the fourth-grade dataset and reproduce the main variables used in the paper. The analysis focuses on fourth grade because the assignment asks for Figure 1 panel B and selected 4th-grade regression results.</p>
-<div id="d11f6c7f" class="cell" data-execution_count="1">
+<div id="09b80d0c" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
@@ -267,8 +271,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 Dep. Variable:                avgverb   R-squared:                       0.013
 Model:                            OLS   Adj. R-squared:                  0.012
 Method:                 Least Squares   F-statistic:                     26.00
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):           3.73e-07
-Time:                        14:52:54   Log-Likelihood:                -7152.5
+Date:                Wed, 13 May 2026   Prob (F-statistic):           3.73e-07
+Time:                        11:55:32   Log-Likelihood:                -7152.5
 No. Observations:                2049   AIC:                         1.431e+04
 Df Residuals:                    2047   BIC:                         1.432e+04
 Df Model:                           1                                         
@@ -292,8 +296,8 @@ Notes:
 Dep. Variable:                avgmath   R-squared:                       0.025
 Model:                            OLS   Adj. R-squared:                  0.025
 Method:                 Least Squares   F-statistic:                     53.20
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):           4.29e-13
-Time:                        14:52:54   Log-Likelihood:                -7329.1
+Date:                Wed, 13 May 2026   Prob (F-statistic):           4.29e-13
+Time:                        11:55:32   Log-Likelihood:                -7329.1
 No. Observations:                2049   AIC:                         1.466e+04
 Df Residuals:                    2047   BIC:                         1.467e+04
 Df Model:                           1                                         
@@ -315,7 +319,7 @@ Notes:
 </div>
 </div>
 <p>The OLS estimates are positive, suggesting that larger classes are associated with higher test scores. This reflects selection bias rather than a causal relationship.</p>
-<div id="c7d4d5c3" class="cell" data-execution_count="2">
+<div id="d43a6a0d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data4[<span class="st">"func1"</span>] <span class="op">=</span> data4[<span class="st">"c_size"</span>] <span class="op">/</span> (np.floor((data4[<span class="st">"c_size"</span>] <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> <span class="dv">40</span>) <span class="op">+</span> <span class="dv">1</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>rf_class <span class="op">=</span> smf.ols(<span class="st">"classize ~ func1 + tipuach"</span>, data<span class="op">=</span>data4).fit()</span>
@@ -332,8 +336,8 @@ Notes:
 Dep. Variable:               classize   R-squared:                       0.564
 Model:                            OLS   Adj. R-squared:                  0.564
 Method:                 Least Squares   F-statistic:                     1326.
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):               0.00
-Time:                        14:52:54   Log-Likelihood:                -5854.3
+Date:                Wed, 13 May 2026   Prob (F-statistic):               0.00
+Time:                        11:55:32   Log-Likelihood:                -5854.3
 No. Observations:                2053   AIC:                         1.171e+04
 Df Residuals:                    2050   BIC:                         1.173e+04
 Df Model:                           2                                         
@@ -358,8 +362,8 @@ Notes:
 Dep. Variable:                avgverb   R-squared:                       0.311
 Model:                            OLS   Adj. R-squared:                  0.311
 Method:                 Least Squares   F-statistic:                     462.3
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):          2.11e-166
-Time:                        14:52:54   Log-Likelihood:                -6783.4
+Date:                Wed, 13 May 2026   Prob (F-statistic):          2.11e-166
+Time:                        11:55:32   Log-Likelihood:                -6783.4
 No. Observations:                2049   AIC:                         1.357e+04
 Df Residuals:                    2046   BIC:                         1.359e+04
 Df Model:                           2                                         
@@ -384,8 +388,8 @@ Notes:
 Dep. Variable:                avgmath   R-squared:                       0.203
 Model:                            OLS   Adj. R-squared:                  0.203
 Method:                 Least Squares   F-statistic:                     261.3
-Date:                Tue, 21 Apr 2026   Prob (F-statistic):          8.41e-102
-Time:                        14:52:54   Log-Likelihood:                -7122.3
+Date:                Wed, 13 May 2026   Prob (F-statistic):          8.41e-102
+Time:                        11:55:32   Log-Likelihood:                -7122.3
 No. Observations:                2049   AIC:                         1.425e+04
 Df Residuals:                    2046   BIC:                         1.427e+04
 Df Model:                           2                                         
@@ -408,7 +412,7 @@ Notes:
 </div>
 </div>
 <p>In contrast, the reduced-form estimates are negative, indicating that increases in predicted class size reduce test scores.</p>
-<div id="5e0770e0" class="cell" data-execution_count="3">
+<div id="69ab627a" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plt.scatter(data4[<span class="st">"c_size"</span>], data4[<span class="st">"classize"</span>], alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Enrollment"</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Class Size"</span>)</span>

@@ -1,0 +1,431 @@
+---
+title: "Do Blueprinty Customers Generate More Patents? Estimating a Poisson Regression Model with Maximum Likelihood"
+author: "Junzhe Zhao"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+    code-fold: show
+    code-summary: "Show Code"
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+Software firms frequently market their products as tools that improve productivity, creativity, and innovation. Blueprinty is no exception. The company claims that its software helps engineering firms streamline their research and development processes and ultimately generate more approved patents.
+
+This raises a natural business analytics question:
+
+> Do Blueprinty customers actually produce more patents than non-customers?
+
+To investigate this question, I estimate a Poisson regression model using maximum likelihood estimation (MLE). Poisson regression is appropriate because patent outcomes are count variables: firms can produce 0, 1, 2, or many patents, but they cannot produce negative or fractional patents.
+
+The analysis proceeds in several stages. I first explore the data visually, then derive the Poisson likelihood function, estimate the model numerically using `scipy.optimize`, compare the results against `statsmodels`, and finally interpret the estimated customer effect in practical business terms.
+
+# Loading Packages and Data
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+from scipy.optimize import minimize
+from scipy.special import gammaln
+```
+
+```{python}
+df = pd.read_csv("blueprinty.csv")
+
+df.head()
+```
+
+```{python}
+df.describe()
+```
+
+# Exploratory Data Analysis
+
+Before estimating a regression model, it is useful to understand the basic structure of the data.
+
+## Average Patent Counts
+
+```{python}
+group_means = (
+    df.groupby("iscustomer")["patents"]
+      .agg(["mean", "median", "std", "count"])
+      .round(2)
+)
+
+group_means.index = ["Non-Customer", "Customer"]
+
+group_means
+```
+
+Customers appear to generate more patents on average than non-customers. However, this raw comparison alone does not establish that Blueprinty causes higher innovation output. Customers may systematically differ in other ways, such as firm age or regional location.
+
+This is precisely why regression modeling becomes useful.
+
+## Distribution of Patent Counts
+
+```{python}
+#| echo: false
+
+fig, axes = plt.subplots(1, 2, figsize=(11,4), sharex=True, sharey=True)
+
+df[df["iscustomer"] == 0]["patents"].hist(
+    ax=axes[0],
+    bins=20
+)
+
+axes[0].set_title("Non-Customers")
+axes[0].set_xlabel("Patent Count")
+axes[0].set_ylabel("Frequency")
+
+df[df["iscustomer"] == 1]["patents"].hist(
+    ax=axes[1],
+    bins=20
+)
+
+axes[1].set_title("Customers")
+axes[1].set_xlabel("Patent Count")
+
+plt.tight_layout()
+plt.show()
+```
+
+The patent distribution is strongly right-skewed. Most firms generate relatively few patents, while a smaller number generate substantially more. This pattern is typical for count outcomes and violates the assumptions underlying ordinary least squares regression.
+
+Importantly, the histogram for customers appears shifted slightly to the right, suggesting that customer firms may indeed produce more patents on average.
+
+## Firm Age by Customer Status
+
+```{python}
+#| echo: false
+
+fig, ax = plt.subplots(figsize=(8,4))
+
+ax.hist(
+    df[df["iscustomer"] == 0]["age"],
+    alpha=0.6,
+    label="Non-Customers"
+)
+
+ax.hist(
+    df[df["iscustomer"] == 1]["age"],
+    alpha=0.6,
+    label="Customers"
+)
+
+ax.set_title("Firm Age Distribution")
+ax.set_xlabel("Firm Age")
+ax.set_ylabel("Frequency")
+ax.legend()
+
+plt.tight_layout()
+plt.show()
+```
+
+Customer firms appear somewhat older on average. This matters because older firms may naturally have more established research pipelines and therefore produce more patents regardless of Blueprinty usage.
+
+If customer firms systematically differ from non-customers in observable characteristics, simple mean comparisons may overstate the effect of the software itself.
+
+# Why Use a Poisson Model?
+
+Patent counts are discrete outcomes that cannot fall below zero. A standard linear regression model is therefore not ideal because:
+
+- it assumes a continuous dependent variable,
+- it can generate negative predictions,
+- and it assumes constant variance.
+
+The Poisson distribution is specifically designed for count outcomes.
+
+The probability mass function is:
+
+$$
+f(Y|\lambda)=\frac{e^{-\lambda}\lambda^Y}{Y!}
+$$
+
+where:
+
+- $Y$ is the observed patent count,
+- $\lambda$ is the expected number of patents.
+
+An important feature of the Poisson model is that predicted outcomes are always positive.
+
+# Deriving the Likelihood Function
+
+Suppose each firm's patent count follows a Poisson distribution independently.
+
+The likelihood function for the full sample is:
+
+$$
+L(\lambda)=\prod_{i=1}^n \frac{e^{-\lambda}\lambda^{Y_i}}{Y_i!}
+$$
+
+Maximum likelihood estimation searches for the parameter value that makes the observed data appear most probable under the assumed model.
+
+Because multiplying many probabilities together can produce extremely small numbers, it is computationally easier to maximize the log-likelihood instead:
+
+$$
+\ell(\lambda)=\sum_{i=1}^n
+\left(
+-\lambda + Y_i\log(\lambda)-\log(Y_i!)
+\right)
+$$
+
+The optimizer searches for the value of $\lambda$ that maximizes this function.
+
+# Coding the Poisson Log-Likelihood
+
+```{python}
+Y = df["patents"].values
+
+def poisson_loglikelihood(lam, Y):
+
+    return np.sum(
+        -lam +
+        Y * np.log(lam) -
+        gammaln(Y + 1)
+    )
+```
+
+# Visualizing the Likelihood Function
+
+```{python}
+lambdas = np.linspace(0.1, 20, 300)
+
+ll_values = [
+    poisson_loglikelihood(lam, Y)
+    for lam in lambdas
+]
+```
+
+```{python}
+#| echo: false
+
+fig, ax = plt.subplots(figsize=(8,5))
+
+ax.plot(
+    lambdas,
+    ll_values,
+    linewidth=2
+)
+
+ax.set_title("Poisson Log-Likelihood Function")
+ax.set_xlabel("Lambda")
+ax.set_ylabel("Log-Likelihood")
+
+plt.tight_layout()
+plt.show()
+```
+
+The log-likelihood reaches its maximum at the value of $\lambda$ that best fits the observed patent data. Conceptually, the optimization algorithm is simply searching for the peak of this curve.
+
+# Numerical Optimization with scipy.optimize
+
+Optimization routines typically minimize functions, so I minimize the negative log-likelihood.
+
+```{python}
+def negative_loglikelihood(lam):
+
+    return -poisson_loglikelihood(lam[0], Y)
+
+result = minimize(
+    negative_loglikelihood,
+    x0=[Y.mean()],
+    bounds=[(0.0001, None)]
+)
+
+result.x
+```
+
+```{python}
+Y.mean()
+```
+
+The estimated MLE is nearly identical to the sample mean, which is a well-known property of the simple Poisson model.
+
+# Extending to Poisson Regression
+
+The previous model assumed that every firm shares the same expected patent count. In practice, firms differ substantially in age, geography, and Blueprinty usage.
+
+A Poisson regression allows expected patent counts to vary across firms:
+
+$$
+\lambda_i = \exp(X_i'\beta)
+$$
+
+The exponential transformation is important because it guarantees positive predicted patent counts.
+
+# Creating the Design Matrix
+
+```{python}
+df["age_sq"] = df["age"] ** 2
+
+X = pd.get_dummies(
+    df[["age", "age_sq", "region", "iscustomer"]],
+    columns=["region"],
+    drop_first=True,
+    dtype=float
+)
+
+X = sm.add_constant(X)
+
+X.head()
+```
+
+I include both age and age squared because innovation productivity may evolve nonlinearly over a firm's lifecycle.
+
+# Estimating the Poisson Regression via MLE
+
+```{python}
+X_np = X.values
+Y = df["patents"].values
+
+def poisson_regression_loglikelihood(beta, Y, X):
+
+    eta = X @ beta
+    lam = np.exp(eta)
+
+    return np.sum(
+        -lam +
+        Y * eta -
+        gammaln(Y + 1)
+    )
+
+def negative_poisson_regression(beta):
+
+    return -poisson_regression_loglikelihood(
+        beta,
+        Y,
+        X_np
+    )
+
+mle_result = minimize(
+    negative_poisson_regression,
+    x0=np.zeros(X_np.shape[1]),
+    method="BFGS"
+)
+
+beta_hat = mle_result.x
+
+beta_hat
+```
+
+# Comparing Results Against statsmodels
+
+```{python}
+glm_model = sm.GLM(
+    Y,
+    X,
+    family=sm.families.Poisson()
+)
+
+glm_results = glm_model.fit()
+```
+
+```{python}
+results_table = pd.DataFrame({
+    "Variable": X.columns,
+    "Coefficient": glm_results.params,
+    "Std Error": glm_results.bse,
+    "P-Value": glm_results.pvalues
+})
+
+results_table.round(4)
+```
+
+The manually estimated coefficients closely match the estimates produced by `statsmodels`. This provides strong evidence that the custom likelihood function and optimization procedure were implemented correctly.
+
+# Interpreting the Customer Effect
+
+Poisson regression coefficients are expressed in log-count units. Exponentiating a coefficient converts it into a multiplicative effect on expected patent counts.
+
+```{python}
+exp_coefs = np.exp(glm_results.params)
+
+exp_coefs
+```
+
+```{python}
+customer_effect = np.exp(
+    glm_results.params["iscustomer"]
+) - 1
+
+customer_effect
+```
+
+The estimated customer effect suggests that Blueprinty customers are predicted to generate more patents than comparable non-customers, holding observable characteristics fixed.
+
+For example, if the estimated effect equals `0.18`, this would imply that customers are predicted to generate approximately 18% more patents than otherwise similar firms.
+
+Importantly, this should not automatically be interpreted as causal evidence. The dataset is observational rather than experimental, meaning unobserved differences between customers and non-customers may still influence the results.
+
+# Predicted Patent Counts
+
+To better visualize the model implications, I compare predicted patent counts for customers and non-customers.
+
+```{python}
+X0 = X.copy()
+X1 = X.copy()
+
+X0["iscustomer"] = 0
+X1["iscustomer"] = 1
+
+pred0 = np.exp(X0.values @ glm_results.params)
+pred1 = np.exp(X1.values @ glm_results.params)
+
+comparison_df = pd.DataFrame({
+    "Group": ["Non-Customer", "Customer"],
+    "Predicted Patents": [
+        pred0.mean(),
+        pred1.mean()
+    ]
+})
+
+comparison_df
+```
+
+```{python}
+#| echo: false
+
+fig, ax = plt.subplots(figsize=(6,4))
+
+ax.bar(
+    comparison_df["Group"],
+    comparison_df["Predicted Patents"]
+)
+
+ax.set_title("Predicted Patent Counts")
+ax.set_ylabel("Expected Patents")
+
+plt.tight_layout()
+plt.show()
+```
+
+The model predicts higher patent counts for Blueprinty customers even after controlling for observable firm characteristics. This reinforces the earlier exploratory evidence suggesting a positive association between Blueprinty usage and innovation output.
+
+# Limitations
+
+Although the regression controls for observable variables such as age and region, important limitations remain.
+
+Most importantly, the analysis is observational rather than randomized. Firms choosing to adopt Blueprinty may differ from non-customers in unobserved ways such as:
+
+- research budgets,
+- management quality,
+- engineering talent,
+- or innovation culture.
+
+As a result, the estimated customer effect should be interpreted as an association rather than definitive causal proof.
+
+# Conclusion
+
+Overall, the analysis provides evidence that Blueprinty customers tend to generate more approved patents than non-customers, even after controlling for observable firm characteristics.
+
+More broadly, this exercise demonstrates how maximum likelihood estimation can be used to estimate count-data models in realistic business analytics settings. The Poisson regression framework is especially useful when modeling discrete outcomes such as patent counts, purchases, website visits, or customer transactions.
+
+From a managerial perspective, the results are at least consistent with the possibility that Blueprinty's software improves innovation productivity. However, establishing a truly causal effect would require stronger research designs such as randomized experiments or panel data methods.

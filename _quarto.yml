@@ -16,6 +16,10 @@ website:
         text: A/B Testing
       - href: replicate.qmd
         text: Replication
+      - href: MLE.qmd
+        text: MLE
+      - href: maxDiff.qmd
+        text: maxDiff
 
 
 format:
